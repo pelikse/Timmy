@@ -15,7 +15,7 @@ public class Main {
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(700, 460);
-        frame.setLocation(430, 100);
+        frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setVisible(true);
 
@@ -162,51 +162,42 @@ public class Main {
 
         shortBreak.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                timerLabel.setText("05:00");
+                timerLabel.setText("00:01");
             }
         });
 
         start.addActionListener(new ActionListener() {
-            private boolean isPaused = false;
-
             public void actionPerformed(ActionEvent e) {
-                if (!isPaused) {
-                    String time = timerLabel.getText();
-                    String[] timeSplit = time.split(":");
-                    minutes = Integer.parseInt(timeSplit[0]);
-                    seconds = Integer.parseInt(timeSplit[1]);
+                String time = timerLabel.getText();
+                String[] timeSplit = time.split(":");
+                minutes = Integer.parseInt(timeSplit[0]);
+                seconds = Integer.parseInt(timeSplit[1]);
 
-                    countdownTimer = new Timer(1000, new ActionListener() {
-                        public void actionPerformed(ActionEvent evt) {
-                            if (seconds > 0) {
-                                seconds--;
+                countdownTimer = new Timer(1000, new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        if (seconds > 0) {
+                            seconds--;
+                        } else {
+                            if (minutes > 0) {
+                                minutes--;
+                                seconds = 59;
                             } else {
-                                if (minutes > 0) {
-                                    minutes--;
-                                    seconds = 59;
-                                } else {
-                                    // Timer finished
-                                    countdownTimer.stop();
-                                    JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                                }
+                                // Timer finished
+                                countdownTimer.stop();
+                                JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                                start.setText("START"); // Update the button text
                             }
-
-                            String formattedTime = String.format("%02d:%02d", minutes, seconds);
-                            timerLabel.setText(formattedTime);
                         }
-                    });
 
-                    countdownTimer.start();
-                    isPaused = true;
-                    start.setText("PAUSE");
-                } else {
-                    countdownTimer.stop();
-                    isPaused = false;
-                    start.setText("START");
-                }
+                        String formattedTime = String.format("%02d:%02d", minutes, seconds);
+                        timerLabel.setText(formattedTime);
+                    }
+                });
+
+                countdownTimer.start();
+                start.setText("PAUSE"); // Update the button text
             }
         });
-
 
         frame.repaint();
     }
