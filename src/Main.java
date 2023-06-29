@@ -1,7 +1,15 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Main {
+    private static JLabel timerLabel;
+    private static Timer countdownTimer;
+    private static int minutes;
+    private static int seconds;
+
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
@@ -25,7 +33,7 @@ public class Main {
 
         JLabel todoLabel = new JLabel("TO-DO LIST");
         todoLabel.setBounds(10, 180, 250, 30);
-        todoLabel.setFont(new Font("SansSerif", Font.BOLD,20));
+        todoLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         todoLabel.setForeground(Color.white);
 
         JButton pomodoro = new JButton("<html>\nPOMODORO <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25:00\n</html>");
@@ -45,7 +53,7 @@ public class Main {
         longBreak.setFocusPainted(false);
         longBreak.setBackground(Color.black);
         longBreak.setForeground(Color.white);
-        longBreak.setBounds(350, 310, 150, 40);
+        longBreak.setBounds(350, 312, 150, 40);
         longBreak.setFocusable(false);
 
         JButton shortBreak = new JButton("<html>\nSHORT BREAK <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;05:00\n</html>");
@@ -55,7 +63,7 @@ public class Main {
         shortBreak.setFocusPainted(false);
         shortBreak.setBackground(Color.black);
         shortBreak.setForeground(Color.white);
-        shortBreak.setBounds(350, 370, 150, 40);
+        shortBreak.setBounds(350, 365, 150, 40);
         shortBreak.setFocusable(false);
 
         JButton start = new JButton("START");
@@ -72,17 +80,20 @@ public class Main {
         label2.setForeground(Color.white);
         label2.setBounds(352, 225, 150, 30);
 
-        JLabel timerLabel = new JLabel("25:00");
+        timerLabel = new JLabel("25:00");
         timerLabel.setBackground(Color.black);
         timerLabel.setBounds(400, 100, 200, 100);
         timerLabel.setHorizontalAlignment(JLabel.CENTER);
         timerLabel.setFont(new Font("Arial", Font.BOLD, 70));
         timerLabel.setForeground(Color.white);
 
-        JPanel todoList = new JPanel();
-        todoList.setBackground(Color.gray);
-        todoList.setBounds(10,220,300,150);
-        todoList.setLayout(new BorderLayout());
+        DefaultListModel<String> model = new DefaultListModel<>();
+        JList<String> toDoList = new JList<>(model);
+        JScrollPane scrollPane = new JScrollPane(toDoList);
+        scrollPane.setBounds(10, 220, 300, 150);
+        toDoList.setBackground(Color.gray);
+        toDoList.setForeground(Color.white);
+        toDoList.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         JButton addButton = new JButton("Add");
         addButton.setOpaque(true);
@@ -117,6 +128,86 @@ public class Main {
         frame.add(label);
         frame.add(addButton);
         frame.add(removeButton);
-        frame.add(todoList);
+        frame.add(scrollPane);
+
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String task = JOptionPane.showInputDialog(frame, "Enter task:");
+                if (task != null && !task.trim().isEmpty()) {
+                    model.addElement(task);
+                }
+            }
+        });
+
+        removeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = toDoList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    model.remove(selectedIndex);
+                }
+            }
+        });
+
+        pomodoro.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timerLabel.setText("25:00");
+            }
+        });
+
+        longBreak.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timerLabel.setText("15:00");
+            }
+        });
+
+        shortBreak.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timerLabel.setText("05:00");
+            }
+        });
+
+        start.addActionListener(new ActionListener() {
+            private boolean isPaused = false;
+
+            public void actionPerformed(ActionEvent e) {
+                if (!isPaused) {
+                    String time = timerLabel.getText();
+                    String[] timeSplit = time.split(":");
+                    minutes = Integer.parseInt(timeSplit[0]);
+                    seconds = Integer.parseInt(timeSplit[1]);
+
+                    countdownTimer = new Timer(1000, new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            if (seconds > 0) {
+                                seconds--;
+                            } else {
+                                if (minutes > 0) {
+                                    minutes--;
+                                    seconds = 59;
+                                } else {
+                                    // Timer finished
+                                    countdownTimer.stop();
+                                    JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                                }
+                            }
+
+                            String formattedTime = String.format("%02d:%02d", minutes, seconds);
+                            timerLabel.setText(formattedTime);
+                        }
+                    });
+
+                    countdownTimer.start();
+                    isPaused = true;
+                    start.setText("PAUSE");
+                } else {
+                    countdownTimer.stop();
+                    isPaused = false;
+                    start.setText("START");
+                }
+            }
+        });
+
+
+        frame.repaint();
     }
 }
