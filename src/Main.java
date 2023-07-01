@@ -182,10 +182,9 @@ public class Main {
                                 minutes--;
                                 seconds = 59;
                             } else {
-                                // Timer finished
                                 countdownTimer.stop();
                                 JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                                start.setText("START"); // Update the button text
+                                start.setText("START"); 
                             }
                         }
 
@@ -195,8 +194,7 @@ public class Main {
                 });
 
                 countdownTimer.start();
-                start.setText("PAUSE"); // Update the button text
-            }
+                start.setText("PAUSE");
         });
 
         frame.repaint();
