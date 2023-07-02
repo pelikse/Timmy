@@ -73,7 +73,17 @@ public class Main {
         start.setFocusPainted(false);
         start.setBackground(Color.black);
         start.setForeground(Color.white);
-        start.setBounds(620, 260, 150, 150);
+        start.setBounds(620, 220, 150, 40);
+        start.setFocusable(false);
+
+        JButton end = new JButton("END");
+        start.setOpaque(true);
+        start.setContentAreaFilled(true);
+        start.setBorderPainted(false);
+        start.setFocusPainted(false);
+        start.setBackground(Color.black);
+        start.setForeground(Color.white);
+        start.setBounds(620, 310, 150, 40);
         start.setFocusable(false);
 
         JLabel label2 = new JLabel("Select Mode:");
@@ -150,6 +160,7 @@ public class Main {
 
         frame.add(label2);
         frame.add(start);
+        frame.add(end);
         frame.add(longBreak);
         frame.add(shortBreak);
         frame.add(pomodoro);
@@ -273,6 +284,11 @@ public class Main {
         shortBreak.addActionListener(e -> timerLabel.setText("00:01"));
 
         start.addActionListener(e -> {
+            if (countdownTimer != null && countdownTimer.isRunning()) {
+                countdownTimer.stop();
+                start.setText("START");
+                return;
+            }
             String time = timerLabel.getText();
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
