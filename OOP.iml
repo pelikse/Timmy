@@ -10,10 +10,12 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/mysql-connector-j-8.0.33/mysql-connector-j-8.0.33.jar!/" />
+          <root url="jar://$USER_HOME$/Downloads/sqlite-jdbc-3.7.2.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/Downloads/sqlite-jdbc-3.7.2.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>
