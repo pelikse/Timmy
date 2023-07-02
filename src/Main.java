@@ -282,12 +282,28 @@ public class Main {
 
         longBreak.addActionListener(e -> timerLabel.setText("15:00"));
 
-        shortBreak.addActionListener(e -> timerLabel.setText("00:01"));
+        shortBreak.addActionListener(e -> timerLabel.setText("05:00"));
+
+        end.addActionListener(e -> {
+            if (countdownTimer != null && countdownTimer.isRunning()) {
+                countdownTimer.stop();
+                timerLabel.setText("00:00");
+                start.setText("START");
+                JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                longBreak.setEnabled(true);
+                shortBreak.setEnabled(true);
+                pomodoro.setEnabled(true);
+                return;
+            }
+        });
 
         start.addActionListener(e -> {
             if (countdownTimer != null && countdownTimer.isRunning()) {
                 countdownTimer.stop();
                 start.setText("START");
+                longBreak.setEnabled(true);
+                shortBreak.setEnabled(true);
+                pomodoro.setEnabled(true);
                 return;
             }
             String time = timerLabel.getText();
@@ -306,6 +322,9 @@ public class Main {
                         } else {
                             countdownTimer.stop();
                             JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                            longBreak.setEnabled(true);
+                            shortBreak.setEnabled(true);
+                            pomodoro.setEnabled(true);
                             start.setText("START");
                         }
                     }
@@ -315,6 +334,9 @@ public class Main {
                 }
             });
 
+            longBreak.setEnabled(false);
+            shortBreak.setEnabled(false);
+            pomodoro.setEnabled(false);
             countdownTimer.start();
             start.setText("PAUSE");
     });
