@@ -1,6 +1,5 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.xml.crypto.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,7 +10,7 @@ public class Main {
     private static Timer countdownTimer;
     private static int minutes;
     private static int seconds;
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,18 +73,18 @@ public class Main {
         start.setFocusPainted(false);
         start.setBackground(Color.black);
         start.setForeground(Color.white);
-        start.setBounds(620, 290, 150, 40);
+        start.setBounds(620, 220, 150, 40);
         start.setFocusable(false);
 
         JButton end = new JButton("END");
-        end.setOpaque(true);
-        end.setContentAreaFilled(true);
-        end.setBorderPainted(false);
-        end.setFocusPainted(false);
-        end.setBackground(Color.black);
-        end.setForeground(Color.white);
-        end.setBounds(620, 340, 150, 40);
-        end.setFocusable(false);
+        start.setOpaque(true);
+        start.setContentAreaFilled(true);
+        start.setBorderPainted(false);
+        start.setFocusPainted(false);
+        start.setBackground(Color.black);
+        start.setForeground(Color.white);
+        start.setBounds(620, 310, 150, 40);
+        start.setFocusable(false);
 
         JLabel label2 = new JLabel("Select Mode:");
         label2.setForeground(Color.white);
@@ -100,13 +99,9 @@ public class Main {
 
         DefaultListModel<Item> model = new DefaultListModel<>();
 
-        Connection connection = SQLiteConnection.getConnection();
+        Connection connection = MySQLConnection.getConnection();
 
         try {
-            DatabaseHelper db = new DatabaseHelper();
-
-            db.createTable(connection);
-
             Statement statement = connection.createStatement();
             String sql = "SELECT * FROM todos";
             ResultSet resultSet = statement.executeQuery(sql);
@@ -180,9 +175,11 @@ public class Main {
         addButton.addActionListener(e -> {
             String task = JOptionPane.showInputDialog(frame, "Enter task:");
             if (task != null && !task.trim().isEmpty()) {
+                Connection connection1 = MySQLConnection.getConnection();
+
                 try {
-                    String sql = "INSERT INTO todos (description) VALUES (?)";
-                    PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+                    String sql = "INSERT INTO todos (id, description) VALUES (DEFAULT, ?)";
+                    PreparedStatement statement = connection1.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
                     statement.setString(1, task);
 
@@ -255,9 +252,11 @@ public class Main {
         removeButton.addActionListener(e -> {
             int selectedIndex = toDoList.getSelectedIndex();
             if (selectedIndex != -1) {
+                Connection connection12 = MySQLConnection.getConnection();
+
                 try {
                     String sql = "DELETE FROM todos WHERE id = ?";
-                    PreparedStatement statement = connection.prepareStatement(sql);
+                    PreparedStatement statement = connection12.prepareStatement(sql);
 
                     statement.setInt(1, model.getElementAt(selectedIndex).getId());
 
