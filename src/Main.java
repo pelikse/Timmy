@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class Main {
-    private static JLabel timerLabel;
+    private static JTextField timerTextField;
     private static Timer countdownTimer;
     private static int minutes;
     private static int seconds;
@@ -91,12 +91,13 @@ public class Main {
         label2.setForeground(Color.white);
         label2.setBounds(452, 225, 150, 30);
 
-        timerLabel = new JLabel("25:00");
-        timerLabel.setBackground(Color.black);
-        timerLabel.setBounds(500, 100, 200, 100);
-        timerLabel.setHorizontalAlignment(JLabel.CENTER);
-        timerLabel.setFont(new Font("Arial", Font.BOLD, 70));
-        timerLabel.setForeground(Color.white);
+        timerTextField = new JTextField("25:00");  // Initialize the timer text field with default value
+        timerTextField.setBackground(Color.black);
+        timerTextField.setBounds(450, 20, 320, 200);
+        timerTextField.setHorizontalAlignment(JLabel.CENTER);
+        timerTextField.setFont(new Font("Arial", Font.BOLD, 100));
+        timerTextField.setForeground(Color.white);
+        timerTextField.setEditable(true);
 
         DefaultListModel<Item> model = new DefaultListModel<>();
 
@@ -170,7 +171,7 @@ public class Main {
         frame.add(shortBreak);
         frame.add(pomodoro);
         frame.add(todoLabel);
-        frame.add(timerLabel);
+        frame.add(timerTextField);
         frame.add(label);
         frame.add(addButton);
         frame.add(updateButton);
@@ -278,16 +279,16 @@ public class Main {
             }
         });
 
-        pomodoro.addActionListener(e -> timerLabel.setText("25:00"));
+        pomodoro.addActionListener(e -> timerTextField.setText("25:00"));
 
-        longBreak.addActionListener(e -> timerLabel.setText("15:00"));
+        longBreak.addActionListener(e -> timerTextField.setText("15:00"));
 
-        shortBreak.addActionListener(e -> timerLabel.setText("05:00"));
+        shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
 
         end.addActionListener(e -> {
             if (countdownTimer != null && countdownTimer.isRunning()) {
                 countdownTimer.stop();
-                timerLabel.setText("00:00");
+                timerTextField.setText("00:00");
                 start.setText("START");
                 JOptionPane.showMessageDialog(frame, "Timer Finished!");
                 longBreak.setEnabled(true);
@@ -306,7 +307,7 @@ public class Main {
                 pomodoro.setEnabled(true);
                 return;
             }
-            String time = timerLabel.getText();
+            String time = timerTextField.getText();  // Get the time from the text field
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
             seconds = Integer.parseInt(timeSplit[1]);
@@ -330,7 +331,7 @@ public class Main {
                     }
 
                     String formattedTime = String.format("%02d:%02d", minutes, seconds);
-                    timerLabel.setText(formattedTime);
+                    timerTextField.setText(formattedTime);
                 }
             });
 
