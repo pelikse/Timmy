@@ -4,11 +4,19 @@ import javax.xml.crypto.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.sql.*;
+import java.awt.AWTException;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.Image;
+
 
 public class Main {
-    private static JTextField timerTextField;
+    private static JLabel timerLabel;
     private static Timer countdownTimer;
+    private static TrayIcon trayIcon;
     private static int minutes;
     private static int seconds;
     public static void main(String[] args) throws SQLException {
@@ -91,13 +99,12 @@ public class Main {
         label2.setForeground(Color.white);
         label2.setBounds(452, 225, 150, 30);
 
-        timerTextField = new JTextField("25:00");  // Initialize the timer text field with default value
-        timerTextField.setBackground(Color.black);
-        timerTextField.setBounds(450, 20, 320, 200);
-        timerTextField.setHorizontalAlignment(JLabel.CENTER);
-        timerTextField.setFont(new Font("Arial", Font.BOLD, 100));
-        timerTextField.setForeground(Color.white);
-        timerTextField.setEditable(true);
+        timerLabel = new JLabel("25:00");
+        timerLabel.setBackground(Color.black);
+        timerLabel.setBounds(500, 100, 200, 100);
+        timerLabel.setHorizontalAlignment(JLabel.CENTER);
+        timerLabel.setFont(new Font("Arial", Font.BOLD, 70));
+        timerLabel.setForeground(Color.white);
 
         DefaultListModel<Item> model = new DefaultListModel<>();
 
@@ -171,7 +178,7 @@ public class Main {
         frame.add(shortBreak);
         frame.add(pomodoro);
         frame.add(todoLabel);
-        frame.add(timerTextField);
+        frame.add(timerLabel);
         frame.add(label);
         frame.add(addButton);
         frame.add(updateButton);
@@ -279,66 +286,165 @@ public class Main {
             }
         });
 
-        pomodoro.addActionListener(e -> timerTextField.setText("25:00"));
+        pomodoro.addActionListener(e -> timerLabel.setText("25:00"));
 
-        longBreak.addActionListener(e -> timerTextField.setText("15:00"));
+        longBreak.addActionListener(e -> timerLabel.setText("15:00"));
 
-        shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
+        shortBreak.addActionListener(e -> timerLabel.setText("05:00"));
 
         end.addActionListener(e -> {
             if (countdownTimer != null && countdownTimer.isRunning()) {
-                countdownTimer.stop();
-                timerTextField.setText("00:00");
-                start.setText("START");
-                JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                longBreak.setEnabled(true);
-                shortBreak.setEnabled(true);
-                pomodoro.setEnabled(true);
-                return;
+                endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
             }
         });
 
         start.addActionListener(e -> {
+            if (timerLabel.getText().equals("00:00")) {
+                return;
+            }
+
             if (countdownTimer != null && countdownTimer.isRunning()) {
                 countdownTimer.stop();
-                start.setText("START");
+                start.setText("RESUME");
                 longBreak.setEnabled(true);
                 shortBreak.setEnabled(true);
                 pomodoro.setEnabled(true);
                 return;
             }
-            String time = timerTextField.getText();  // Get the time from the text field
+
+            if (SystemTray.isSupported() && countdownTimer == null) {
+                PopupMenu popupMenu = new PopupMenu();
+
+                MenuItem openItem = new MenuItem("Open");
+                openItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        frame.toFront();
+                        frame.repaint();
+                    }
+                });
+
+                MenuItem toggleItem = new MenuItem("Pause");
+                toggleItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (timerLabel.getText().equals("00:00")) {
+                            return;
+                        }
+                        if (countdownTimer.isRunning()) {
+                            toggleItem.setLabel("Resume");
+                            countdownTimer.stop();
+                        } else {
+                            toggleItem.setLabel("Pause");
+                            countdownTimer.start();
+                        }
+                    }
+                });
+
+                MenuItem endItem = new MenuItem("End");
+                endItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (countdownTimer.isRunning()) {
+                            endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
+                        }
+                    }
+                });
+
+                MenuItem exitItem = new MenuItem("Exit");
+                exitItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.exit(0);
+                    }
+                });
+
+                popupMenu.add(openItem);
+                popupMenu.addSeparator();
+                popupMenu.add(toggleItem);
+                popupMenu.add(endItem);
+                popupMenu.addSeparator();
+                popupMenu.add(exitItem);
+
+                SystemTray tray = SystemTray.getSystemTray();
+                trayIcon = new TrayIcon(getImageForTime("00:00"), "Countdown Timer", popupMenu);
+
+                try {
+                    tray.add(trayIcon);
+
+                    countdownTimer = new Timer(1000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            if (seconds > 0) {
+                                seconds--;
+                            } else {
+                                if (minutes > 0) {
+                                    minutes--;
+                                    seconds = 59;
+                                } else {
+                                    countdownTimer.stop();
+                                    longBreak.setEnabled(true);
+                                    shortBreak.setEnabled(true);
+                                    pomodoro.setEnabled(true);
+                                    start.setText("START");
+                                    trayIcon.setToolTip("Countdown finished!");
+                                    trayIcon.displayMessage("Countdown Finished", "The countdown has ended.", TrayIcon.MessageType.INFO);
+                                    ((Timer) e.getSource()).stop();
+                                    JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                                }
+                            }
+                            String formattedTime = String.format("%02d:%02d", minutes, seconds);
+                            trayIcon.setImage(getImageForTime(formattedTime));
+                            timerLabel.setText(formattedTime);
+                        }
+                    });
+
+                    countdownTimer.start();
+                } catch (AWTException exception) {
+                    System.err.println("Error adding tray icon.");
+                }
+            } else if (countdownTimer != null) {
+                countdownTimer.start();
+            } else {
+                System.err.println("System tray not supported.");
+            }
+
+            String time = timerLabel.getText();
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
             seconds = Integer.parseInt(timeSplit[1]);
 
-            countdownTimer = new Timer(1000, new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if (seconds > 0) {
-                        seconds--;
-                    } else {
-                        if (minutes > 0) {
-                            minutes--;
-                            seconds = 59;
-                        } else {
-                            countdownTimer.stop();
-                            JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                            longBreak.setEnabled(true);
-                            shortBreak.setEnabled(true);
-                            pomodoro.setEnabled(true);
-                            start.setText("START");
-                        }
-                    }
-
-                    String formattedTime = String.format("%02d:%02d", minutes, seconds);
-                    timerTextField.setText(formattedTime);
-                }
-            });
-
             longBreak.setEnabled(false);
             shortBreak.setEnabled(false);
             pomodoro.setEnabled(false);
-            countdownTimer.start();
             start.setText("PAUSE");
-    });
-}}
+        });
+    }
+
+    private static void endCountDownTimer(JButton start, JFrame frame, JButton longBreak, JButton shortBreak, JButton pomodoro) {
+        countdownTimer.stop();
+        timerLabel.setText("00:00");
+        start.setText("START");
+        JOptionPane.showMessageDialog(frame, "Timer Finished!");
+        longBreak.setEnabled(true);
+        shortBreak.setEnabled(true);
+        pomodoro.setEnabled(true);
+        trayIcon.setImage(getImageForTime("00:00"));
+        return;
+    }
+
+    private static java.awt.Image getImageForTime(String time) {
+        java.awt.Image originalImage = Toolkit.getDefaultToolkit().getImage("tray_icon.png");
+        BufferedImage bufferedImage = new BufferedImage(464, 345, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.drawImage(originalImage, 0, 0, null);
+        graphics.setFont(new Font("Arial", Font.BOLD, 180));
+        graphics.setColor(Color.white);
+        graphics.drawString(time, 0, 230);
+        graphics.dispose();
+
+        return bufferedImage;
+    }
+}
+
