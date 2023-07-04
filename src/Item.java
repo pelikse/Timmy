@@ -1,10 +1,14 @@
+import javax.swing.*;
+
 class Item {
     private int id;
-    private String data;
+    private JLabel data;
+    private boolean done;
 
-    public Item(int id, String data) {
+    public Item(int id, JLabel data, boolean done) {
         this.id = id;
         this.data = data;
+        this.done = done;
     }
 
     public int getId() {
@@ -12,11 +16,19 @@ class Item {
     }
 
     public String getData() {
-        return data;
+        return data.getText();
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 
     @Override
     public String toString() {
-        return data;
+        return data.getText();
     }
 }

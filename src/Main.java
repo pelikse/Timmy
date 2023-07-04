@@ -23,7 +23,7 @@ public class Main {
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 470);
+        frame.setSize(800, 510);
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setVisible(true);
@@ -121,8 +121,14 @@ public class Main {
 
             while (resultSet.next()) {
                 Integer id = resultSet.getInt("id");
-                String description = resultSet.getString("description");
-                model.addElement(new Item(id, description));
+                String descriptionStr = resultSet.getString("description");
+                Boolean done = resultSet.getBoolean("done");
+                JLabel description;
+                if (done)
+                    description = new JLabel("<html><strike>" + descriptionStr + "</strike></html>");
+                else
+                    description = new JLabel(descriptionStr);
+                model.addElement(new Item(id, description, done));
             }
 
             resultSet.close();
@@ -158,6 +164,16 @@ public class Main {
         updateButton.setBounds(140, 380, 100, 30);
         updateButton.setFocusable(false);
 
+        JButton markButton = new JButton("Mark as Done");
+        markButton.setOpaque(true);
+        markButton.setContentAreaFilled(true);
+        markButton.setBorderPainted(false);
+        markButton.setFocusPainted(false);
+        markButton.setBackground(Color.black);
+        markButton.setForeground(Color.white);
+        markButton.setBounds(125, 420, 130, 30);
+        markButton.setFocusable(false);
+
         JButton removeButton = new JButton("Remove");
         removeButton.setOpaque(true);
         removeButton.setContentAreaFilled(true);
@@ -182,6 +198,7 @@ public class Main {
         frame.add(label);
         frame.add(addButton);
         frame.add(updateButton);
+        frame.add(markButton);
         frame.add(removeButton);
         frame.add(scrollPane);
 
@@ -189,10 +206,11 @@ public class Main {
             String task = JOptionPane.showInputDialog(frame, "Enter task:");
             if (task != null && !task.trim().isEmpty()) {
                 try {
-                    String sql = "INSERT INTO todos (description) VALUES (?)";
+                    String sql = "INSERT INTO todos (description, done) VALUES (?, ?)";
                     PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
                     statement.setString(1, task);
+                    statement.setBoolean(2, false);
 
                     int rowsInserted = statement.executeUpdate();
 
@@ -200,7 +218,7 @@ public class Main {
                         ResultSet generatedKeys = statement.getGeneratedKeys();
                         if (generatedKeys.next()) {
                             int id = generatedKeys.getInt(1);
-                            model.addElement(new Item(id, task));
+                            model.addElement(new Item(id, new JLabel(task), false));
                         }
                         generatedKeys.close();
 
@@ -221,7 +239,8 @@ public class Main {
             int selectedIndex = toDoList.getSelectedIndex();
             int id = model.getElementAt(selectedIndex).getId();
             if (selectedIndex != -1) {
-                String initialTask = new String();
+                String initialTask = "";
+                Boolean done = false;
                 try {
                     Statement statement = connection.createStatement();
                     String sql = "SELECT * FROM todos WHERE id = " + id;
@@ -229,6 +248,7 @@ public class Main {
 
                     while (resultSet.next()) {
                         initialTask = resultSet.getString("description");
+                        done = resultSet.getBoolean("done");
                     }
                 } catch (SQLException exception) {
                     exception.printStackTrace();
@@ -247,7 +267,12 @@ public class Main {
 
                         if (rowsAffected > 0) {
                             System.out.println("Data updated successfully.");
-                            model.setElementAt(new Item(id, updatedTask), selectedIndex);
+                            JLabel updatedTaskLabel;
+                            if (done)
+                                updatedTaskLabel = new JLabel("<html><strike>" + updatedTask+ "</strike></html>");
+                            else
+                                updatedTaskLabel = new JLabel(updatedTask);
+                            model.setElementAt(new Item(id, updatedTaskLabel, done), selectedIndex);
                         } else {
                             System.out.println("No data found or failed to update data.");
                         }
@@ -256,6 +281,52 @@ public class Main {
                     } catch (SQLException exception) {
                         exception.printStackTrace();
                     }
+                }
+            }
+        });
+
+        markButton.addActionListener(e -> {
+            int selectedIndex = toDoList.getSelectedIndex();
+            int id = model.getElementAt(selectedIndex).getId();
+            if (selectedIndex != -1) {
+                String description = "";
+                Boolean done = false;
+                try {
+                    Statement statement = connection.createStatement();
+                    String sql = "SELECT * FROM todos WHERE id = " + id;
+                    ResultSet resultSet = statement.executeQuery(sql);
+
+                    while (resultSet.next()) {
+                        description = resultSet.getString("description");
+                        done = resultSet.getBoolean("done");
+                    }
+                } catch (SQLException exception) {
+                    exception.printStackTrace();
+                }
+                try {
+                    String sql = "UPDATE todos SET done = ? WHERE id = ?";
+                    PreparedStatement statement = connection.prepareStatement(sql);
+
+                    statement.setBoolean(1, !done);
+                    statement.setInt(2, id);
+
+                    int rowsAffected = statement.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Data marked as done successfully.");
+                        JLabel taskLabel;
+                        if (!done)
+                            taskLabel = new JLabel("<html><strike>" + description + "</strike></html>");
+                        else
+                            taskLabel = new JLabel(description);
+                        model.setElementAt(new Item(id, taskLabel, done), selectedIndex);
+                    } else {
+                        System.out.println("Failed marking as done");
+                    }
+
+                    statement.close();
+                } catch (SQLException exception) {
+                    exception.printStackTrace();
                 }
             }
         });
