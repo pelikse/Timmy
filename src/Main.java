@@ -23,7 +23,7 @@ public class Main {
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 510);
+        frame.setSize(750, 500);
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setVisible(true);
@@ -37,11 +37,11 @@ public class Main {
         JLabel label = new JLabel();
         label.setIcon(image);
         label.setHorizontalAlignment(JLabel.LEFT);
-        label.setBounds(0, 20, 700, 460);
+        label.setBounds(10, 30, 700, 460);
         label.setVerticalAlignment(JLabel.TOP);
 
         JLabel todoLabel = new JLabel("TO-DO LIST");
-        todoLabel.setBounds(40, 180, 250, 30);
+        todoLabel.setBounds(30, 180, 250, 30);
         todoLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         todoLabel.setForeground(Color.white);
 
@@ -52,7 +52,7 @@ public class Main {
         pomodoro.setFocusPainted(false);
         pomodoro.setBackground(Color.black);
         pomodoro.setForeground(Color.white);
-        pomodoro.setBounds(450, 260, 150, 40);
+        pomodoro.setBounds(400, 304, 160, 45);
         pomodoro.setFocusable(false);
 
         JButton longBreak = new JButton("<html>\nLONG BREAK <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15:00\n</html>");
@@ -62,7 +62,7 @@ public class Main {
         longBreak.setFocusPainted(false);
         longBreak.setBackground(Color.black);
         longBreak.setForeground(Color.white);
-        longBreak.setBounds(450, 312, 150, 40);
+        longBreak.setBounds(400, 355, 160, 45);
         longBreak.setFocusable(false);
 
         JButton shortBreak = new JButton("<html>\nSHORT BREAK <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;05:00\n</html>");
@@ -72,7 +72,7 @@ public class Main {
         shortBreak.setFocusPainted(false);
         shortBreak.setBackground(Color.black);
         shortBreak.setForeground(Color.white);
-        shortBreak.setBounds(450, 365, 150, 40);
+        shortBreak.setBounds(400, 406, 160, 45);
         shortBreak.setFocusable(false);
 
         JButton start = new JButton("START");
@@ -82,7 +82,7 @@ public class Main {
         start.setFocusPainted(false);
         start.setBackground(Color.black);
         start.setForeground(Color.white);
-        start.setBounds(620, 290, 150, 40);
+        start.setBounds(570, 304, 150, 105);
         start.setFocusable(false);
 
         JButton end = new JButton("END");
@@ -92,18 +92,18 @@ public class Main {
         end.setFocusPainted(false);
         end.setBackground(Color.black);
         end.setForeground(Color.white);
-        end.setBounds(620, 340, 150, 40);
+        end.setBounds(570, 415, 150, 35);
         end.setFocusable(false);
 
         JLabel label2 = new JLabel("Select Mode:");
         label2.setForeground(Color.white);
-        label2.setBounds(452, 225, 150, 30);
+        label2.setBounds(400, 275, 170, 30);
 
         timerTextField = new JTextField("25:00");
         timerTextField.setBackground(Color.black);
-        timerTextField.setBounds(450, 20, 320, 200);
+        timerTextField.setBounds(400, 50, 320, 220);
         timerTextField.setHorizontalAlignment(JLabel.CENTER);
-        timerTextField.setFont(new Font("Arial", Font.BOLD, 100));
+        timerTextField.setFont(new Font("Arial", Font.BOLD, 110));
         timerTextField.setForeground(Color.white);
         timerTextField.setEditable(true);
 
@@ -140,7 +140,7 @@ public class Main {
 
         JList<Item> toDoList = new JList<>(model);
         JScrollPane scrollPane = new JScrollPane(toDoList);
-        scrollPane.setBounds(40, 220, 300, 150);
+        scrollPane.setBounds(30, 220, 321, 150);
         toDoList.setBackground(Color.gray);
         toDoList.setForeground(Color.white);
         toDoList.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -172,7 +172,7 @@ public class Main {
         markButton.setFocusPainted(false);
         markButton.setBackground(Color.black);
         markButton.setForeground(Color.white);
-        markButton.setBounds(125, 420, 130, 30);
+        markButton.setBounds(30, 420, 321, 30);
         markButton.setFocusable(false);
 
         JButton removeButton = new JButton("Remove");
