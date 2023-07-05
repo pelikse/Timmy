@@ -365,7 +365,7 @@ public class Main {
         shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
 
         end.addActionListener(e -> {
-            if (countdownTimer != null && countdownTimer.isRunning()) {
+            if (countdownTimer != null) {
                 endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
             }
         });
@@ -490,6 +490,7 @@ public class Main {
             shortBreak.setEnabled(false);
             pomodoro.setEnabled(false);
             start.setText("PAUSE");
+
         });
     }
 
