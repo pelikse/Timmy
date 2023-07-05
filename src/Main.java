@@ -334,10 +334,10 @@ public class Main {
                 }
             });
 
+            countdownTimer.start();
             longBreak.setEnabled(false);
             shortBreak.setEnabled(false);
             pomodoro.setEnabled(false);
-            countdownTimer.start();
             start.setText("PAUSE");
     });
 }}
