@@ -14,7 +14,7 @@ import java.awt.Image;
 
 
 public class Main {
-    private static JLabel timerLabel;
+    private static JTextField timerTextField;
     private static Timer countdownTimer;
     private static TrayIcon trayIcon;
     private static int minutes;
@@ -99,12 +99,13 @@ public class Main {
         label2.setForeground(Color.white);
         label2.setBounds(452, 225, 150, 30);
 
-        timerLabel = new JLabel("25:00");
-        timerLabel.setBackground(Color.black);
-        timerLabel.setBounds(500, 100, 200, 100);
-        timerLabel.setHorizontalAlignment(JLabel.CENTER);
-        timerLabel.setFont(new Font("Arial", Font.BOLD, 70));
-        timerLabel.setForeground(Color.white);
+        timerTextField = new JTextField("25:00");
+        timerTextField.setBackground(Color.black);
+        timerTextField.setBounds(450, 20, 320, 200);
+        timerTextField.setHorizontalAlignment(JLabel.CENTER);
+        timerTextField.setFont(new Font("Arial", Font.BOLD, 100));
+        timerTextField.setForeground(Color.white);
+        timerTextField.setEditable(true);
 
         DefaultListModel<Item> model = new DefaultListModel<>();
 
@@ -194,7 +195,7 @@ public class Main {
         frame.add(shortBreak);
         frame.add(pomodoro);
         frame.add(todoLabel);
-        frame.add(timerLabel);
+        frame.add(timerTextField);
         frame.add(label);
         frame.add(addButton);
         frame.add(updateButton);
@@ -357,11 +358,11 @@ public class Main {
             }
         });
 
-        pomodoro.addActionListener(e -> timerLabel.setText("25:00"));
+        pomodoro.addActionListener(e -> timerTextField.setText("25:00"));
 
-        longBreak.addActionListener(e -> timerLabel.setText("15:00"));
+        longBreak.addActionListener(e -> timerTextField.setText("15:00"));
 
-        shortBreak.addActionListener(e -> timerLabel.setText("05:00"));
+        shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
 
         end.addActionListener(e -> {
             if (countdownTimer != null && countdownTimer.isRunning()) {
@@ -370,7 +371,7 @@ public class Main {
         });
 
         start.addActionListener(e -> {
-            if (timerLabel.getText().equals("00:00")) {
+            if (timerTextField.getText().equals("00:00")) {
                 return;
             }
 
@@ -399,7 +400,7 @@ public class Main {
                 toggleItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (timerLabel.getText().equals("00:00")) {
+                        if (timerTextField.getText().equals("00:00")) {
                             return;
                         }
                         if (countdownTimer.isRunning()) {
@@ -466,7 +467,7 @@ public class Main {
                             }
                             String formattedTime = String.format("%02d:%02d", minutes, seconds);
                             trayIcon.setImage(getImageForTime(formattedTime));
-                            timerLabel.setText(formattedTime);
+                            timerTextField.setText(formattedTime);
                         }
                     });
 
@@ -480,7 +481,7 @@ public class Main {
                 System.err.println("System tray not supported.");
             }
 
-            String time = timerLabel.getText();
+            String time = timerTextField.getText();
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
             seconds = Integer.parseInt(timeSplit[1]);
@@ -494,7 +495,7 @@ public class Main {
 
     private static void endCountDownTimer(JButton start, JFrame frame, JButton longBreak, JButton shortBreak, JButton pomodoro) {
         countdownTimer.stop();
-        timerLabel.setText("00:00");
+        timerTextField.setText("00:00");
         start.setText("START");
         JOptionPane.showMessageDialog(frame, "Timer Finished!");
         longBreak.setEnabled(true);
