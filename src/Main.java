@@ -4,18 +4,26 @@ import javax.xml.crypto.Data;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.sql.*;
+import java.awt.AWTException;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.Image;
+
 
 public class Main {
-    private static JLabel timerLabel;
+    private static JTextField timerTextField;
     private static Timer countdownTimer;
+    private static TrayIcon trayIcon;
     private static int minutes;
     private static int seconds;
     public static void main(String[] args) throws SQLException {
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 470);
+        frame.setSize(750, 500);
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setVisible(true);
@@ -29,11 +37,11 @@ public class Main {
         JLabel label = new JLabel();
         label.setIcon(image);
         label.setHorizontalAlignment(JLabel.LEFT);
-        label.setBounds(0, 20, 700, 460);
+        label.setBounds(10, 30, 700, 460);
         label.setVerticalAlignment(JLabel.TOP);
 
         JLabel todoLabel = new JLabel("TO-DO LIST");
-        todoLabel.setBounds(40, 180, 250, 30);
+        todoLabel.setBounds(30, 180, 250, 30);
         todoLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         todoLabel.setForeground(Color.white);
 
@@ -44,7 +52,7 @@ public class Main {
         pomodoro.setFocusPainted(false);
         pomodoro.setBackground(Color.black);
         pomodoro.setForeground(Color.white);
-        pomodoro.setBounds(450, 260, 150, 40);
+        pomodoro.setBounds(400, 304, 160, 45);
         pomodoro.setFocusable(false);
 
         JButton longBreak = new JButton("<html>\nLONG BREAK <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15:00\n</html>");
@@ -54,7 +62,7 @@ public class Main {
         longBreak.setFocusPainted(false);
         longBreak.setBackground(Color.black);
         longBreak.setForeground(Color.white);
-        longBreak.setBounds(450, 312, 150, 40);
+        longBreak.setBounds(400, 355, 160, 45);
         longBreak.setFocusable(false);
 
         JButton shortBreak = new JButton("<html>\nSHORT BREAK <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;05:00\n</html>");
@@ -64,7 +72,7 @@ public class Main {
         shortBreak.setFocusPainted(false);
         shortBreak.setBackground(Color.black);
         shortBreak.setForeground(Color.white);
-        shortBreak.setBounds(450, 365, 150, 40);
+        shortBreak.setBounds(400, 406, 160, 45);
         shortBreak.setFocusable(false);
 
         JButton start = new JButton("START");
@@ -74,7 +82,7 @@ public class Main {
         start.setFocusPainted(false);
         start.setBackground(Color.black);
         start.setForeground(Color.white);
-        start.setBounds(620, 290, 150, 40);
+        start.setBounds(570, 304, 150, 105);
         start.setFocusable(false);
 
         JButton end = new JButton("END");
@@ -84,19 +92,20 @@ public class Main {
         end.setFocusPainted(false);
         end.setBackground(Color.black);
         end.setForeground(Color.white);
-        end.setBounds(620, 340, 150, 40);
+        end.setBounds(570, 415, 150, 35);
         end.setFocusable(false);
 
         JLabel label2 = new JLabel("Select Mode:");
         label2.setForeground(Color.white);
-        label2.setBounds(452, 225, 150, 30);
+        label2.setBounds(400, 275, 170, 30);
 
-        timerLabel = new JLabel("25:00");
-        timerLabel.setBackground(Color.black);
-        timerLabel.setBounds(500, 100, 200, 100);
-        timerLabel.setHorizontalAlignment(JLabel.CENTER);
-        timerLabel.setFont(new Font("Arial", Font.BOLD, 70));
-        timerLabel.setForeground(Color.white);
+        timerTextField = new JTextField("25:00");
+        timerTextField.setBackground(Color.black);
+        timerTextField.setBounds(400, 50, 320, 220);
+        timerTextField.setHorizontalAlignment(JLabel.CENTER);
+        timerTextField.setFont(new Font("Arial", Font.BOLD, 110));
+        timerTextField.setForeground(Color.white);
+        timerTextField.setEditable(true);
 
         DefaultListModel<Item> model = new DefaultListModel<>();
 
@@ -113,8 +122,14 @@ public class Main {
 
             while (resultSet.next()) {
                 Integer id = resultSet.getInt("id");
-                String description = resultSet.getString("description");
-                model.addElement(new Item(id, description));
+                String descriptionStr = resultSet.getString("description");
+                Boolean done = resultSet.getBoolean("done");
+                JLabel description;
+                if (done)
+                    description = new JLabel("<html><strike>" + descriptionStr + "</strike></html>");
+                else
+                    description = new JLabel(descriptionStr);
+                model.addElement(new Item(id, description, done));
             }
 
             resultSet.close();
@@ -125,7 +140,7 @@ public class Main {
 
         JList<Item> toDoList = new JList<>(model);
         JScrollPane scrollPane = new JScrollPane(toDoList);
-        scrollPane.setBounds(40, 220, 300, 150);
+        scrollPane.setBounds(30, 220, 321, 150);
         toDoList.setBackground(Color.gray);
         toDoList.setForeground(Color.white);
         toDoList.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -150,6 +165,16 @@ public class Main {
         updateButton.setBounds(140, 380, 100, 30);
         updateButton.setFocusable(false);
 
+        JButton markButton = new JButton("Mark as Done");
+        markButton.setOpaque(true);
+        markButton.setContentAreaFilled(true);
+        markButton.setBorderPainted(false);
+        markButton.setFocusPainted(false);
+        markButton.setBackground(Color.black);
+        markButton.setForeground(Color.white);
+        markButton.setBounds(30, 420, 321, 30);
+        markButton.setFocusable(false);
+
         JButton removeButton = new JButton("Remove");
         removeButton.setOpaque(true);
         removeButton.setContentAreaFilled(true);
@@ -170,10 +195,11 @@ public class Main {
         frame.add(shortBreak);
         frame.add(pomodoro);
         frame.add(todoLabel);
-        frame.add(timerLabel);
+        frame.add(timerTextField);
         frame.add(label);
         frame.add(addButton);
         frame.add(updateButton);
+        frame.add(markButton);
         frame.add(removeButton);
         frame.add(scrollPane);
 
@@ -181,10 +207,11 @@ public class Main {
             String task = JOptionPane.showInputDialog(frame, "Enter task:");
             if (task != null && !task.trim().isEmpty()) {
                 try {
-                    String sql = "INSERT INTO todos (description) VALUES (?)";
+                    String sql = "INSERT INTO todos (description, done) VALUES (?, ?)";
                     PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
                     statement.setString(1, task);
+                    statement.setBoolean(2, false);
 
                     int rowsInserted = statement.executeUpdate();
 
@@ -192,7 +219,7 @@ public class Main {
                         ResultSet generatedKeys = statement.getGeneratedKeys();
                         if (generatedKeys.next()) {
                             int id = generatedKeys.getInt(1);
-                            model.addElement(new Item(id, task));
+                            model.addElement(new Item(id, new JLabel(task), false));
                         }
                         generatedKeys.close();
 
@@ -213,7 +240,8 @@ public class Main {
             int selectedIndex = toDoList.getSelectedIndex();
             int id = model.getElementAt(selectedIndex).getId();
             if (selectedIndex != -1) {
-                String initialTask = new String();
+                String initialTask = "";
+                Boolean done = false;
                 try {
                     Statement statement = connection.createStatement();
                     String sql = "SELECT * FROM todos WHERE id = " + id;
@@ -221,6 +249,7 @@ public class Main {
 
                     while (resultSet.next()) {
                         initialTask = resultSet.getString("description");
+                        done = resultSet.getBoolean("done");
                     }
                 } catch (SQLException exception) {
                     exception.printStackTrace();
@@ -239,7 +268,12 @@ public class Main {
 
                         if (rowsAffected > 0) {
                             System.out.println("Data updated successfully.");
-                            model.setElementAt(new Item(id, updatedTask), selectedIndex);
+                            JLabel updatedTaskLabel;
+                            if (done)
+                                updatedTaskLabel = new JLabel("<html><strike>" + updatedTask+ "</strike></html>");
+                            else
+                                updatedTaskLabel = new JLabel(updatedTask);
+                            model.setElementAt(new Item(id, updatedTaskLabel, done), selectedIndex);
                         } else {
                             System.out.println("No data found or failed to update data.");
                         }
@@ -248,6 +282,52 @@ public class Main {
                     } catch (SQLException exception) {
                         exception.printStackTrace();
                     }
+                }
+            }
+        });
+
+        markButton.addActionListener(e -> {
+            int selectedIndex = toDoList.getSelectedIndex();
+            int id = model.getElementAt(selectedIndex).getId();
+            if (selectedIndex != -1) {
+                String description = "";
+                Boolean done = false;
+                try {
+                    Statement statement = connection.createStatement();
+                    String sql = "SELECT * FROM todos WHERE id = " + id;
+                    ResultSet resultSet = statement.executeQuery(sql);
+
+                    while (resultSet.next()) {
+                        description = resultSet.getString("description");
+                        done = resultSet.getBoolean("done");
+                    }
+                } catch (SQLException exception) {
+                    exception.printStackTrace();
+                }
+                try {
+                    String sql = "UPDATE todos SET done = ? WHERE id = ?";
+                    PreparedStatement statement = connection.prepareStatement(sql);
+
+                    statement.setBoolean(1, !done);
+                    statement.setInt(2, id);
+
+                    int rowsAffected = statement.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Data marked as done successfully.");
+                        JLabel taskLabel;
+                        if (!done)
+                            taskLabel = new JLabel("<html><strike>" + description + "</strike></html>");
+                        else
+                            taskLabel = new JLabel(description);
+                        model.setElementAt(new Item(id, taskLabel, done), selectedIndex);
+                    } else {
+                        System.out.println("Failed marking as done");
+                    }
+
+                    statement.close();
+                } catch (SQLException exception) {
+                    exception.printStackTrace();
                 }
             }
         });
@@ -278,66 +358,165 @@ public class Main {
             }
         });
 
-        pomodoro.addActionListener(e -> timerLabel.setText("25:00"));
+        pomodoro.addActionListener(e -> timerTextField.setText("25:00"));
 
-        longBreak.addActionListener(e -> timerLabel.setText("15:00"));
+        longBreak.addActionListener(e -> timerTextField.setText("15:00"));
 
-        shortBreak.addActionListener(e -> timerLabel.setText("05:00"));
+        shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
 
         end.addActionListener(e -> {
             if (countdownTimer != null && countdownTimer.isRunning()) {
-                countdownTimer.stop();
-                timerLabel.setText("00:00");
-                start.setText("START");
-                JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                longBreak.setEnabled(true);
-                shortBreak.setEnabled(true);
-                pomodoro.setEnabled(true);
-                return;
+                endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
             }
         });
 
         start.addActionListener(e -> {
+            if (timerTextField.getText().equals("00:00")) {
+                return;
+            }
+
             if (countdownTimer != null && countdownTimer.isRunning()) {
                 countdownTimer.stop();
-                start.setText("START");
+                start.setText("RESUME");
                 longBreak.setEnabled(true);
                 shortBreak.setEnabled(true);
                 pomodoro.setEnabled(true);
                 return;
             }
-            String time = timerLabel.getText();
+
+            if (SystemTray.isSupported() && countdownTimer == null) {
+                PopupMenu popupMenu = new PopupMenu();
+
+                MenuItem openItem = new MenuItem("Open");
+                openItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        frame.toFront();
+                        frame.repaint();
+                    }
+                });
+
+                MenuItem toggleItem = new MenuItem("Pause");
+                toggleItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (timerTextField.getText().equals("00:00")) {
+                            return;
+                        }
+                        if (countdownTimer.isRunning()) {
+                            toggleItem.setLabel("Resume");
+                            countdownTimer.stop();
+                        } else {
+                            toggleItem.setLabel("Pause");
+                            countdownTimer.start();
+                        }
+                    }
+                });
+
+                MenuItem endItem = new MenuItem("End");
+                endItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (countdownTimer.isRunning()) {
+                            endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
+                        }
+                    }
+                });
+
+                MenuItem exitItem = new MenuItem("Exit");
+                exitItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.exit(0);
+                    }
+                });
+
+                popupMenu.add(openItem);
+                popupMenu.addSeparator();
+                popupMenu.add(toggleItem);
+                popupMenu.add(endItem);
+                popupMenu.addSeparator();
+                popupMenu.add(exitItem);
+
+                SystemTray tray = SystemTray.getSystemTray();
+                trayIcon = new TrayIcon(getImageForTime("00:00"), "Countdown Timer", popupMenu);
+
+                try {
+                    tray.add(trayIcon);
+
+                    countdownTimer = new Timer(1000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            if (seconds > 0) {
+                                seconds--;
+                            } else {
+                                if (minutes > 0) {
+                                    minutes--;
+                                    seconds = 59;
+                                } else {
+                                    countdownTimer.stop();
+                                    longBreak.setEnabled(true);
+                                    shortBreak.setEnabled(true);
+                                    pomodoro.setEnabled(true);
+                                    start.setText("START");
+                                    trayIcon.setToolTip("Countdown finished!");
+                                    trayIcon.displayMessage("Countdown Finished", "The countdown has ended.", TrayIcon.MessageType.INFO);
+                                    ((Timer) e.getSource()).stop();
+                                    JOptionPane.showMessageDialog(frame, "Timer Finished!");
+                                }
+                            }
+                            String formattedTime = String.format("%02d:%02d", minutes, seconds);
+                            trayIcon.setImage(getImageForTime(formattedTime));
+                            timerTextField.setText(formattedTime);
+                        }
+                    });
+
+                    countdownTimer.start();
+                } catch (AWTException exception) {
+                    System.err.println("Error adding tray icon.");
+                }
+            } else if (countdownTimer != null) {
+                countdownTimer.start();
+            } else {
+                System.err.println("System tray not supported.");
+            }
+
+            String time = timerTextField.getText();
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
             seconds = Integer.parseInt(timeSplit[1]);
 
-            countdownTimer = new Timer(1000, new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if (seconds > 0) {
-                        seconds--;
-                    } else {
-                        if (minutes > 0) {
-                            minutes--;
-                            seconds = 59;
-                        } else {
-                            countdownTimer.stop();
-                            JOptionPane.showMessageDialog(frame, "Timer Finished!");
-                            longBreak.setEnabled(true);
-                            shortBreak.setEnabled(true);
-                            pomodoro.setEnabled(true);
-                            start.setText("START");
-                        }
-                    }
-
-                    String formattedTime = String.format("%02d:%02d", minutes, seconds);
-                    timerLabel.setText(formattedTime);
-                }
-            });
-
-            countdownTimer.start();
             longBreak.setEnabled(false);
             shortBreak.setEnabled(false);
             pomodoro.setEnabled(false);
             start.setText("PAUSE");
-    });
-}}
+        });
+    }
+
+    private static void endCountDownTimer(JButton start, JFrame frame, JButton longBreak, JButton shortBreak, JButton pomodoro) {
+        countdownTimer.stop();
+        timerTextField.setText("00:00");
+        start.setText("START");
+        JOptionPane.showMessageDialog(frame, "Timer Finished!");
+        longBreak.setEnabled(true);
+        shortBreak.setEnabled(true);
+        pomodoro.setEnabled(true);
+        trayIcon.setImage(getImageForTime("00:00"));
+        return;
+    }
+
+    private static java.awt.Image getImageForTime(String time) {
+        java.awt.Image originalImage = Toolkit.getDefaultToolkit().getImage("tray_icon.png");
+        BufferedImage bufferedImage = new BufferedImage(464, 345, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.drawImage(originalImage, 0, 0, null);
+        graphics.setFont(new Font("Arial", Font.BOLD, 180));
+        graphics.setColor(Color.white);
+        graphics.drawString(time, 0, 230);
+        graphics.dispose();
+
+        return bufferedImage;
+    }
+}
+
