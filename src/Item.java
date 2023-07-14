@@ -1,5 +1,6 @@
 import javax.swing.*;
 
+// A class representing an item in the to-do list
 class Item {
     private int id;
     private JLabel data;

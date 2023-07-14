@@ -20,6 +20,7 @@ public class Main {
     private static int minutes;
     private static int seconds;
     public static void main(String[] args) throws SQLException {
+        // Creating the main JFrame
         JFrame frame = new JFrame();
         frame.setTitle("Timmy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,20 +32,24 @@ public class Main {
         ImageIcon image = new ImageIcon("logo.png");
         frame.setIconImage(image.getImage());
 
+        // Creating the main JPanel
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
+        // Creating the main label for the logo
         JLabel label = new JLabel();
         label.setIcon(image);
         label.setHorizontalAlignment(JLabel.LEFT);
         label.setBounds(10, 30, 700, 460);
         label.setVerticalAlignment(JLabel.TOP);
 
+        // Creating the label for the to-do list
         JLabel todoLabel = new JLabel("TO-DO LIST");
         todoLabel.setBounds(30, 180, 250, 30);
         todoLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         todoLabel.setForeground(Color.white);
 
+        // Creating buttons for different timer modes
         JButton pomodoro = new JButton("<html>\nPOMODORO <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25:00\n</html>");
         pomodoro.setOpaque(true);
         pomodoro.setContentAreaFilled(true);
@@ -75,6 +80,8 @@ public class Main {
         shortBreak.setBounds(400, 406, 160, 45);
         shortBreak.setFocusable(false);
 
+        // Creating buttons for start and end actions
+
         JButton start = new JButton("START");
         start.setOpaque(true);
         start.setContentAreaFilled(true);
@@ -95,6 +102,8 @@ public class Main {
         end.setBounds(570, 415, 150, 35);
         end.setFocusable(false);
 
+        // Creating the timer text field
+
         JLabel label2 = new JLabel("Select Mode:");
         label2.setForeground(Color.white);
         label2.setBounds(400, 275, 170, 30);
@@ -107,19 +116,25 @@ public class Main {
         timerTextField.setForeground(Color.white);
         timerTextField.setEditable(true);
 
+        // Creating the model for the to-do list
         DefaultListModel<Item> model = new DefaultListModel<>();
 
+        // Establishing a connection to the database
         Connection connection = SQLiteConnection.getConnection();
 
         try {
+            // Creating a database helper instance
             DatabaseHelper db = new DatabaseHelper();
 
+            // Creating the necessary table if it doesn't exist
             db.createTable(connection);
 
+            // Querying the database for existing to-do items
             Statement statement = connection.createStatement();
             String sql = "SELECT * FROM todos";
             ResultSet resultSet = statement.executeQuery(sql);
 
+            // Populating the to-do list model with items from the database
             while (resultSet.next()) {
                 Integer id = resultSet.getInt("id");
                 String descriptionStr = resultSet.getString("description");
@@ -138,6 +153,7 @@ public class Main {
             e.printStackTrace();
         }
 
+        // Creating a JList and JScrollPane for the to-do list
         JList<Item> toDoList = new JList<>(model);
         JScrollPane scrollPane = new JScrollPane(toDoList);
         scrollPane.setBounds(30, 220, 321, 150);
@@ -185,6 +201,7 @@ public class Main {
         removeButton.setBounds(250, 380, 100, 30);
         removeButton.setFocusable(false);
 
+        // Adding the components to the frame
         frame.getContentPane().setBackground(new Color(52, 47, 48, 255));
         frame.setLayout(null);
 
@@ -520,4 +537,3 @@ public class Main {
         return bufferedImage;
     }
 }
-
