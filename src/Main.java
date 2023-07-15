@@ -161,6 +161,7 @@ public class Main {
         toDoList.setForeground(Color.white);
         toDoList.setBorder(new EmptyBorder(5, 5, 5, 5));
 
+        // Creating an Add button
         JButton addButton = new JButton("Add");
         addButton.setOpaque(true);
         addButton.setContentAreaFilled(true);
@@ -171,6 +172,7 @@ public class Main {
         addButton.setBounds(30, 380, 100, 30);
         addButton.setFocusable(false);
 
+        // Creating an Update button
         JButton updateButton = new JButton("Update");
         updateButton.setOpaque(true);
         updateButton.setContentAreaFilled(true);
@@ -181,6 +183,7 @@ public class Main {
         updateButton.setBounds(140, 380, 100, 30);
         updateButton.setFocusable(false);
 
+        // Creating a Mark as Done button
         JButton markButton = new JButton("Mark as Done");
         markButton.setOpaque(true);
         markButton.setContentAreaFilled(true);
@@ -191,6 +194,7 @@ public class Main {
         markButton.setBounds(30, 420, 321, 30);
         markButton.setFocusable(false);
 
+        // Creating a Remove button
         JButton removeButton = new JButton("Remove");
         removeButton.setOpaque(true);
         removeButton.setContentAreaFilled(true);
@@ -221,9 +225,12 @@ public class Main {
         frame.add(scrollPane);
 
         addButton.addActionListener(e -> {
+            // Action when add button is clicked
+            // Prompt user to enter a task description
             String task = JOptionPane.showInputDialog(frame, "Enter task:");
             if (task != null && !task.trim().isEmpty()) {
                 try {
+                    // Insert the task into the 'todos' table in the database
                     String sql = "INSERT INTO todos (description, done) VALUES (?, ?)";
                     PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
@@ -233,9 +240,11 @@ public class Main {
                     int rowsInserted = statement.executeUpdate();
 
                     if (rowsInserted > 0) {
+                        // Retrieve the auto-generated ID of the inserted task
                         ResultSet generatedKeys = statement.getGeneratedKeys();
                         if (generatedKeys.next()) {
                             int id = generatedKeys.getInt(1);
+                            // Add the task to the UI model
                             model.addElement(new Item(id, new JLabel(task), false));
                         }
                         generatedKeys.close();
@@ -254,12 +263,16 @@ public class Main {
         });
 
         updateButton.addActionListener(e -> {
+            // Action when update button is clicked
+            // Retrieve the index of the selected task in the UI model
             int selectedIndex = toDoList.getSelectedIndex();
+            // Retrieve the ID of the selected task
             int id = model.getElementAt(selectedIndex).getId();
             if (selectedIndex != -1) {
                 String initialTask = "";
                 Boolean done = false;
                 try {
+                    // Fetch the task details from the database
                     Statement statement = connection.createStatement();
                     String sql = "SELECT * FROM todos WHERE id = " + id;
                     ResultSet resultSet = statement.executeQuery(sql);
@@ -271,10 +284,12 @@ public class Main {
                 } catch (SQLException exception) {
                     exception.printStackTrace();
                 }
+                // Prompt user to enter an updated task description
                 String updatedTask = JOptionPane.showInputDialog(null, "Enter updated task:", "Input Dialog",
                         JOptionPane.PLAIN_MESSAGE, null, null, initialTask).toString();
                 if (updatedTask != null && !updatedTask.trim().isEmpty()) {
                     try {
+                        // Update the task description in the database
                         String sql = "UPDATE todos SET description = ? WHERE id = ?";
                         PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -286,10 +301,12 @@ public class Main {
                         if (rowsAffected > 0) {
                             System.out.println("Data updated successfully.");
                             JLabel updatedTaskLabel;
+                            // Create a label for the updated task, strikethrough if it's marked as done
                             if (done)
                                 updatedTaskLabel = new JLabel("<html><strike>" + updatedTask+ "</strike></html>");
                             else
                                 updatedTaskLabel = new JLabel(updatedTask);
+                            // Update the task in the UI model
                             model.setElementAt(new Item(id, updatedTaskLabel, done), selectedIndex);
                         } else {
                             System.out.println("No data found or failed to update data.");
@@ -304,12 +321,16 @@ public class Main {
         });
 
         markButton.addActionListener(e -> {
+            // Action when mark button is clicked
+            // Retrieve the index of the selected task in the UI model
             int selectedIndex = toDoList.getSelectedIndex();
+            // Retrieve the ID of the selected task
             int id = model.getElementAt(selectedIndex).getId();
             if (selectedIndex != -1) {
                 String description = "";
                 Boolean done = false;
                 try {
+                    // Fetch the task details from the database
                     Statement statement = connection.createStatement();
                     String sql = "SELECT * FROM todos WHERE id = " + id;
                     ResultSet resultSet = statement.executeQuery(sql);
@@ -322,6 +343,7 @@ public class Main {
                     exception.printStackTrace();
                 }
                 try {
+                    // Toggle the 'done' status of the task in the database
                     String sql = "UPDATE todos SET done = ? WHERE id = ?";
                     PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -333,10 +355,12 @@ public class Main {
                     if (rowsAffected > 0) {
                         System.out.println("Data marked as done successfully.");
                         JLabel taskLabel;
+                        // Create a label for the task, strikethrough if it's marked as done
                         if (!done)
                             taskLabel = new JLabel("<html><strike>" + description + "</strike></html>");
                         else
                             taskLabel = new JLabel(description);
+                        // Update the task in the UI model
                         model.setElementAt(new Item(id, taskLabel, done), selectedIndex);
                     } else {
                         System.out.println("Failed marking as done");
@@ -350,9 +374,12 @@ public class Main {
         });
 
         removeButton.addActionListener(e -> {
+            // Action when remove button is clicked
+            // Retrieve the index of the selected task in the UI model
             int selectedIndex = toDoList.getSelectedIndex();
             if (selectedIndex != -1) {
                 try {
+                    // Delete the task from the database
                     String sql = "DELETE FROM todos WHERE id = ?";
                     PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -371,9 +398,12 @@ public class Main {
                     exception.printStackTrace();
                 }
 
+                // Remove the task from the UI model
                 model.remove(selectedIndex);
             }
         });
+
+        // Set the texts for respective modes
 
         pomodoro.addActionListener(e -> timerTextField.setText("25:00"));
 
@@ -382,6 +412,8 @@ public class Main {
         shortBreak.addActionListener(e -> timerTextField.setText("05:00"));
 
         end.addActionListener(e -> {
+            // Action when end button is clicked
+            // Stop the countdown timer and perform necessary cleanup
             if (countdownTimer != null) {
                 endCountDownTimer(start, frame, longBreak, shortBreak, pomodoro);
             }
@@ -393,6 +425,8 @@ public class Main {
             }
 
             if (countdownTimer != null && countdownTimer.isRunning()) {
+                // Action when start button is clicked and the timer is already running
+                // Pause the countdown timer and update UI accordingly
                 countdownTimer.stop();
                 start.setText("RESUME");
                 longBreak.setEnabled(true);
@@ -402,9 +436,16 @@ public class Main {
             }
 
             if (SystemTray.isSupported() && countdownTimer == null) {
+                // Action when start button is clicked and the timer is not running
+                // Create a system tray icon and start the countdown timer
+                // Note: This section is dependent on the availability of system tray support
+
+                // Create a popup menu for the system tray icon
                 PopupMenu popupMenu = new PopupMenu();
 
                 MenuItem openItem = new MenuItem("Open");
+                // Action when "Open" menu item is clicked
+                // Bring the application window to the front
                 openItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -414,6 +455,8 @@ public class Main {
                 });
 
                 MenuItem toggleItem = new MenuItem("Pause");
+                // Action when "Pause/Resume" menu item is clicked
+                // Pause or resume the countdown timer based on its current state
                 toggleItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -431,6 +474,8 @@ public class Main {
                 });
 
                 MenuItem endItem = new MenuItem("End");
+                // Action when "End" menu item is clicked
+                // Stop the countdown timer and perform necessary cleanup
                 endItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -441,6 +486,8 @@ public class Main {
                 });
 
                 MenuItem exitItem = new MenuItem("Exit");
+                // Action when "Exit" menu item is clicked
+                // Terminate the application
                 exitItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -455,12 +502,14 @@ public class Main {
                 popupMenu.addSeparator();
                 popupMenu.add(exitItem);
 
+                // Create a system tray icon
                 SystemTray tray = SystemTray.getSystemTray();
                 trayIcon = new TrayIcon(getImageForTime("00:00"), "Countdown Timer", popupMenu);
 
                 try {
                     tray.add(trayIcon);
 
+                    // Start the countdown timer
                     countdownTimer = new Timer(1000, new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent evt) {
@@ -471,6 +520,7 @@ public class Main {
                                     minutes--;
                                     seconds = 59;
                                 } else {
+                                    // Countdown timer has ended
                                     countdownTimer.stop();
                                     longBreak.setEnabled(true);
                                     shortBreak.setEnabled(true);
@@ -482,6 +532,7 @@ public class Main {
                                     JOptionPane.showMessageDialog(frame, "Timer Finished!");
                                 }
                             }
+                            // Update the timerTextField and tray icon with the current time
                             String formattedTime = String.format("%02d:%02d", minutes, seconds);
                             trayIcon.setImage(getImageForTime(formattedTime));
                             timerTextField.setText(formattedTime);
@@ -493,16 +544,19 @@ public class Main {
                     System.err.println("Error adding tray icon.");
                 }
             } else if (countdownTimer != null) {
+                // Resume the countdown timer
                 countdownTimer.start();
             } else {
                 System.err.println("System tray not supported.");
             }
 
+            // Retrieve the initial time from the timerTextField
             String time = timerTextField.getText();
             String[] timeSplit = time.split(":");
             minutes = Integer.parseInt(timeSplit[0]);
             seconds = Integer.parseInt(timeSplit[1]);
 
+            // Disable buttons related to the countdown timer
             longBreak.setEnabled(false);
             shortBreak.setEnabled(false);
             pomodoro.setEnabled(false);
